@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Ambiente
+.env
+venv/
+env/
+.venv/
+
+# Banco local
+*.db
+*.sqlite3
+
+# Logs
+posts_log.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
