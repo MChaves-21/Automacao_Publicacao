@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Verificação 2FA — MktAutomation</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#07090d;--surface:#0e1219;--border2:#263347;--text:#d8e2f0;--text2:#7a90ab;--text3:#4a607a;--amber:#f0a020;--amber-dim:rgba(240,160,32,.12);--amber-glow:rgba(240,160,32,.3);--red:#f05060;--red-dim:rgba(240,80,96,.12)}
+  :root{--bg:#060a12;--s1:#080d16;--s2:#0c1420;--b1:#182438;--b2:#1e2f48;--t1:#ddeeff;--t2:#5d80a8;--t3:#2e4a6a;--gold:#e8a920;--gd:rgba(232,169,32,.08);--gg:rgba(232,169,32,.2);--red:#f04f5e;--rdd:rgba(240,79,94,.1)}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
-  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border2) 1px,transparent 1px),linear-gradient(90deg,var(--border2) 1px,transparent 1px);background-size:48px 48px;opacity:.2;pointer-events:none}
-  .card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:40px;width:380px;position:relative;z-index:1;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;display:flex;align-items:center;justify-content:center}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--b1) 1px,transparent 1px),linear-gradient(90deg,var(--b1) 1px,transparent 1px);background-size:52px 52px;opacity:.4;pointer-events:none}
+  .card{background:var(--s1);border:1px solid var(--b2);border-radius:20px;padding:44px 40px;width:400px;position:relative;z-index:1;box-shadow:0 32px 80px rgba(0,0,0,.6)}
   .logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
-  .logo-icon{width:40px;height:40px;background:var(--amber);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px var(--amber-glow)}
-  .logo-text h1{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
-  .logo-text p{font-size:10px;color:var(--text3);margin-top:2px}
-  h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px}
-  .sub{font-size:11px;color:var(--text3);margin-bottom:24px;line-height:1.5}
-  .otp-inputs{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
-  .otp-inputs input{width:44px;height:52px;background:#0a0e14;border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:22px;font-family:'JetBrains Mono',monospace;text-align:center;outline:none;transition:border-color .15s}
-  .otp-inputs input:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
-  .error{background:var(--red-dim);border:1px solid rgba(240,80,96,.25);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--red);margin-bottom:16px}
-  .btn{width:100%;background:var(--amber);color:#07090d;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:12px;cursor:pointer;transition:all .15s}
-  .btn:hover{background:#f5b030;box-shadow:0 4px 20px var(--amber-glow)}
-  .back{text-align:center;margin-top:16px;font-size:11px;color:var(--text3)}
-  .back a{color:var(--amber);text-decoration:none}
+  .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),#f59e0b);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 24px var(--gg)}
+  .logo-text h1{font-family:'Syne',sans-serif;font-size:16px;font-weight:800}
+  .logo-text p{font-size:10px;color:var(--t3);margin-top:2px}
+  h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:6px}
+  .sub{font-size:12px;color:var(--t3);margin-bottom:28px;line-height:1.6}
+  .error{background:var(--rdd);border:1px solid rgba(240,79,94,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:18px}
+  .otp-wrap{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+  .otp-wrap input{width:46px;height:56px;background:var(--s2);border:1px solid var(--b2);border-radius:10px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:500;text-align:center;outline:none;transition:border-color .15s,box-shadow .15s}
+  .otp-wrap input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gd)}
+  .btn{width:100%;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#06090f;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:13px;cursor:pointer;transition:all .15s}
+  .btn:hover{filter:brightness(1.08);box-shadow:0 6px 24px var(--gg);transform:translateY(-1px)}
+  .back{text-align:center;margin-top:18px;font-size:11px;color:var(--t3)}
+  .back a{color:var(--gold);text-decoration:none;font-weight:500}
 </style>
 </head>
 <body>
@@ -33,11 +33,11 @@
     <div class="logo-text"><h1>MktAutomation</h1><p>Verificação em duas etapas</p></div>
   </div>
   <h2>Código de verificação</h2>
-  <p class="sub">Abra seu app autenticador (Google Authenticator, Authy) e insira o código de 6 dígitos.</p>
-  {% if error %}<div class="error">⚠️ {{ error }}</div>{% endif %}
+  <p class="sub">Abra o Google Authenticator ou Authy e insira o código de 6 dígitos.</p>
+  {% if error %}<div class="error">⚠ {{ error }}</div>{% endif %}
   <form method="POST" id="form">
     <input type="hidden" name="token" id="token-hidden">
-    <div class="otp-inputs" id="otp-inputs">
+    <div class="otp-wrap" id="otp-wrap">
       <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autofocus>
       <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
       <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]">
@@ -50,15 +50,13 @@
   <div class="back"><a href="/logout">← Voltar ao login</a></div>
 </div>
 <script>
-const inputs = document.querySelectorAll('#otp-inputs input');
-inputs.forEach((inp, i) => {
-  inp.addEventListener('input', e => {
-    if (inp.value && i < inputs.length - 1) inputs[i+1].focus();
-    document.getElementById('token-hidden').value = [...inputs].map(x=>x.value).join('');
+const inputs = document.querySelectorAll('#otp-wrap input');
+inputs.forEach((inp,i)=>{
+  inp.addEventListener('input',e=>{
+    if(inp.value&&i<inputs.length-1)inputs[i+1].focus();
+    document.getElementById('token-hidden').value=[...inputs].map(x=>x.value).join('');
   });
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus();
-  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)inputs[i-1].focus()});
 });
 </script>
 </body>
