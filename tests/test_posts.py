@@ -76,15 +76,18 @@ class TestApprovalWorkflow:
         assert r.status_code == 200
         assert r.get_json()["status"] == "pending_review"
 
-    def test_approve_post(self, auth_client, app):
+    def test_approve_post(self, auth_client, app, mock_gemini):
         # Editor cria e envia
         ec = self._create_editor_client(app, "ed_approve")
         post_r = ec.post("/api/posts", json={"content":"P aprovação","platforms":["twitter"]})
         pid = post_r.get_json()["id"]
         ec.post(f"/api/posts/{pid}/submit")
 
-        # Admin aprova (auth_client é admin)
-        r = auth_client.post(f"/api/posts/{pid}/approve")
+        # Admin aprova (auth_client é admin); publicação externa simulada
+        from unittest.mock import patch
+        fake_pub = lambda ac, image_url=None: {"platform": ac.platform, "id": "fake"}
+        with patch.dict("core.publishers.PUBLISHERS", {"twitter": fake_pub}):
+            r = auth_client.post(f"/api/posts/{pid}/approve")
         assert r.status_code == 200
         assert r.get_json()["post"]["status"] in ("approved", "published")
 

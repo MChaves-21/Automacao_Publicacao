@@ -1,5 +1,7 @@
 # 📣 Marketing Automation System v6
 
+[![Testes](https://github.com/MChaves-21/Automacao_Publicacao/actions/workflows/tests.yml/badge.svg)](https://github.com/MChaves-21/Automacao_Publicacao/actions/workflows/tests.yml)
+
 Sistema completo de automação de marketing com **26 funcionalidades**, 9 plataformas, Gemini Flash (gratuito), painel web PWA instalável e 151 testes automatizados.
 
 ---
