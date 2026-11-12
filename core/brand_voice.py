@@ -76,7 +76,7 @@ def score_post(content: str, platforms: list[str]) -> dict:
         f'"by_platform": {{"twitter": <1-10>, "instagram": <1-10>, "linkedin": <1-10>}}}}'
     )
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel(config.gemini_model)
     resp  = model.generate_content(prompt)
     raw   = re.sub(r"^```(?:json)?\s*", "", resp.text.strip())
     raw   = re.sub(r"\s*```$", "", raw)

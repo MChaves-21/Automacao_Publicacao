@@ -84,7 +84,7 @@ def _generate_variation(original_text: str) -> str:
     from config import config
 
     genai.configure(api_key=config.gemini_api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel(config.gemini_model)
 
     resp = model.generate_content(
         f"Reescreva o post abaixo de forma diferente, mantendo a mensagem central "

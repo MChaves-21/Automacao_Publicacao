@@ -2,7 +2,7 @@
 
 [![Testes](https://github.com/MChaves-21/Automacao_Publicacao/actions/workflows/tests.yml/badge.svg)](https://github.com/MChaves-21/Automacao_Publicacao/actions/workflows/tests.yml)
 
-Sistema completo de automação de marketing com **26 funcionalidades**, 9 plataformas, Gemini Flash (gratuito), painel web PWA instalável e 151 testes automatizados.
+Sistema completo de automação de marketing com **26 funcionalidades**, 9 plataformas, Gemini Flash (gratuito), painel web PWA instalável e 163 testes automatizados.
 
 ---
 
@@ -23,6 +23,18 @@ Sistema completo de automação de marketing com **26 funcionalidades**, 9 plata
 
 ---
 
+## ✂️ Texto sempre dentro do limite de cada rede
+
+A IA às vezes devolve um texto maior do que a rede aceita, e a publicação falha. Por isso o `core/ai_processor.py` confere cada texto **do jeito que vai ser publicado** (texto + hashtags; em threads do X, tweet por tweet):
+
+1. Se algum passar do limite, pede ao Gemini uma versão mais curta **só daquele texto**, dizendo o tamanho atual e o limite.
+2. Tenta até 2 vezes.
+3. Se ainda não couber, corta no fim da última palavra que cabe e põe reticências, para a publicação nunca falhar.
+
+Os testes estão em `tests/test_limites.py`.
+
+---
+
 ## 🏗️ Estrutura
 
 ```
@@ -35,7 +47,7 @@ marketing_automation/
 │
 ├── core/
 │   ├── models.py               ← User, Post, Template, BrandVoice, RssFeed, Webhook, AuditLog
-│   ├── ai_processor.py         ← Gemini Flash + Brand Voice
+│   ├── ai_processor.py         ← Gemini Flash + Brand Voice + validação de tamanho
 │   ├── scheduler.py            ← APScheduler + PostgreSQL
 │   ├── brand_voice.py          ← Identidade de marca + Score de performance
 │   ├── rss_monitor.py          ← Monitoramento de feeds RSS
@@ -74,7 +86,7 @@ marketing_automation/
 │   ├── verify_2fa.html
 │   └── index.html              ← Painel com 14 abas
 │
-└── tests/                      ← 151 testes
+└── tests/                      ← 163 testes
     ├── conftest.py
     ├── test_auth.py
     ├── test_posts.py
@@ -179,5 +191,5 @@ Eventos disponíveis: `post.published`, `post.approved`, `post.rejected`, `post.
 
 ```bash
 pytest tests/ --ignore=tests/test_scheduler.py -v
-# 151 testes
+# 163 testes
 ```
