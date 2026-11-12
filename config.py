@@ -9,6 +9,8 @@ class Config:
     # ── IA ────────────────────────────────────────────────
     gemini_api_key:  str = field(default_factory=lambda: os.getenv("GEMINI_API_KEY", ""))
     openai_api_key:  str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
+    # Modelo do Gemini. O gemini-1.5-flash foi desativado pelo Google em 2025.
+    gemini_model:    str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
 
     # ── Web / Auth ────────────────────────────────────────
     flask_secret_key: str = field(default_factory=lambda: os.getenv("FLASK_SECRET_KEY", "dev-insecure"))

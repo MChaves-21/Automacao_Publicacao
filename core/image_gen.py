@@ -47,7 +47,7 @@ def suggest_image_prompt(content: str) -> str:
     from config import config as cfg
     genai.configure(api_key=cfg.gemini_api_key)
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel(config.gemini_model)
     response = model.generate_content(
         f"Crie um prompt em inglês para gerar uma imagem profissional de marketing no DALL-E 3 "
         f"para acompanhar este post: '{content[:300]}'. "

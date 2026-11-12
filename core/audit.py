@@ -51,7 +51,7 @@ def analyze_sentiment(comments: list[str]) -> dict:
     sample = comments[:50]
     text = "\n".join(f"- {c}" for c in sample)
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel(config.gemini_model)
     response = model.generate_content(
         f"Analise o sentimento dos comentários abaixo sobre uma marca nas redes sociais.\n\n"
         f"Comentários:\n{text}\n\n"
@@ -120,7 +120,7 @@ def generate_ab_variants(original_text: str, platforms: list[str]) -> tuple[dict
     from config import config
     genai.configure(api_key=config.gemini_api_key)
 
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel(config.gemini_model)
     r = model.generate_content(
         f"Reescreva o texto abaixo de duas formas diferentes para um teste A/B:\n\n"
         f"Original: {original_text}\n\n"

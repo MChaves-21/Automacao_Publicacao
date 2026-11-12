@@ -2,6 +2,7 @@
 core/ai_processor.py — Adaptação de conteúdo usando Google Gemini Flash (gratuito).
 """
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from typing import Optional
@@ -12,7 +13,13 @@ from config import config
 
 genai.configure(api_key=config.gemini_api_key)
 
+log = logging.getLogger(__name__)
+
 # ── Constantes ───────────────────────────────────────────────────────────────
+
+# Quantas vezes pedimos ao Gemini uma versão mais curta antes de cortar o texto
+MAX_TENTATIVAS_REESCRITA = 2
+TWEET_MAX = 280
 
 PLATFORMS = ("twitter", "instagram", "linkedin", "facebook")
 
@@ -137,6 +144,109 @@ def _parse_response(raw: str, platforms: list[str]) -> dict[str, AdaptedContent]
     }
 
 
+# ── Validação de tamanho ─────────────────────────────────────────────────────
+
+def _hashtag_str(hashtags: list[str]) -> str:
+    return " ".join(f"#{h}" for h in hashtags) if hashtags else ""
+
+
+def final_length(text: str, hashtags: list[str]) -> int:
+    """Tamanho do post como o publisher envia: texto + linha em branco + hashtags."""
+    tags = _hashtag_str(hashtags)
+    return len(text) + (len(tags) + 2 if tags else 0)
+
+
+def platform_limit(platform: str) -> int:
+    return int(PLATFORM_RULES[platform]["max_chars"])
+
+
+def find_violations(results: dict[str, "AdaptedContent"]) -> dict[str, int]:
+    """
+    Retorna {plataforma: tamanho} de cada texto que passa do limite da rede.
+    Em threads do Twitter, vale o maior tweet (as hashtags vão no último).
+    """
+    violations: dict[str, int] = {}
+    for platform, content in results.items():
+        if platform not in PLATFORM_RULES:
+            continue
+        if content.is_thread and content.thread_parts:
+            parts = list(content.thread_parts)
+            sizes = [len(p) for p in parts[:-1]] + [final_length(parts[-1], content.hashtags)]
+            biggest = max(sizes)
+            if biggest > TWEET_MAX:
+                violations[platform] = biggest
+            continue
+        size = final_length(content.text, content.hashtags)
+        if size > platform_limit(platform):
+            violations[platform] = size
+    return violations
+
+
+def _build_rewrite_prompt(results: dict[str, "AdaptedContent"], violations: dict[str, int]) -> str:
+    pedidos = []
+    for platform, size in violations.items():
+        limit = TWEET_MAX if results[platform].is_thread else platform_limit(platform)
+        pedidos.append(
+            f"--- {platform.upper()} ---\n"
+            f"Ficou com {size} caracteres (contando as hashtags); o limite é {limit}.\n"
+            f"Texto atual:\n{results[platform].text}\n"
+            f"Hashtags atuais: {results[platform].hashtags}\n"
+        )
+    return (
+        "Os textos abaixo passaram do limite de caracteres da rede. "
+        "Reescreva cada um mais curto, mantendo a mensagem e o tom, "
+        "com folga de pelo menos 10% abaixo do limite (contando as hashtags).\n\n"
+        + "\n".join(pedidos)
+        + "\nResponda só com JSON no mesmo formato, apenas com estas plataformas: "
+        + ", ".join(violations)
+    )
+
+
+def _truncate(text: str, max_len: int) -> str:
+    """Último recurso: corta no fim da última palavra que cabe e põe reticências."""
+    if len(text) <= max_len:
+        return text
+    cut = text[: max(max_len - 1, 0)].rsplit(" ", 1)[0].rstrip(" ,.;:")
+    return cut + "…"
+
+
+def _force_fit(content: "AdaptedContent", platform: str) -> None:
+    if content.is_thread and content.thread_parts:
+        parts = [_truncate(p, TWEET_MAX) for p in content.thread_parts]
+        room = TWEET_MAX - (final_length(parts[-1], content.hashtags) - len(parts[-1]))
+        parts[-1] = _truncate(parts[-1], max(room, 0))
+        content.thread_parts = parts
+        return
+    room = platform_limit(platform) - (final_length("", content.hashtags))
+    content.text = _truncate(content.text, max(room, 0))
+
+
+def ensure_within_limits(model, results: dict[str, "AdaptedContent"]) -> dict[str, "AdaptedContent"]:
+    """
+    Garante que todo texto cabe no limite da rede.
+
+    1. Mede cada texto do jeito que será publicado (com hashtags).
+    2. Se algum estourar, pede ao Gemini uma versão mais curta só dele
+       (até MAX_TENTATIVAS_REESCRITA vezes).
+    3. Se ainda assim não couber, corta no fim de uma palavra.
+    """
+    for tentativa in range(1, MAX_TENTATIVAS_REESCRITA + 1):
+        violations = find_violations(results)
+        if not violations:
+            return results
+        log.warning("Tentativa %d: textos acima do limite: %s", tentativa, violations)
+        try:
+            response = model.generate_content(_build_rewrite_prompt(results, violations))
+            results.update(_parse_response(response.text, list(violations)))
+        except Exception as exc:  # resposta inválida: segue para a próxima tentativa
+            log.warning("Reescrita falhou: %s", exc)
+
+    for platform in find_violations(results):
+        log.warning("%s ainda acima do limite; cortando o texto.", platform)
+        _force_fit(results[platform], platform)
+    return results
+
+
 # ── API pública ───────────────────────────────────────────────────────────────
 
 def adapt_content(
@@ -171,14 +281,15 @@ def adapt_content(
         raise ValueError(f"Nenhuma plataforma válida. Opções: {PLATFORMS}")
 
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name=config.gemini_model,
         system_instruction=_SYSTEM_PROMPT,
         generation_config=genai.GenerationConfig(temperature=0.7, max_output_tokens=4096),
     )
 
     prompt = _build_prompt(original_text, platforms, has_image=bool(image_url))
     response = model.generate_content(prompt)
-    return _parse_response(response.text, platforms)
+    results = _parse_response(response.text, platforms)
+    return ensure_within_limits(model, results)
 
 
 def preview_adapted_content(results: dict[str, AdaptedContent]) -> None:
